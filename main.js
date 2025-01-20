@@ -1,5 +1,5 @@
-import './style.css'
-import decomp from 'poly-decomp'
+// import './style.css'
+// import decomp from 'poly-decomp'
 
 // Set Up the Sensor
 
@@ -72,24 +72,25 @@ if (window.DeviceOrientationEvent) {
 
 // Load Images
 
-let glass1 = new Image()
-import glass1pic from './bottlepic/glass1.png';
+let glass1pic = './bottlepic/glass1.png';
+let glass1 = document.createElement("img");
 glass1.src = glass1pic;
-let glass2 = new Image()
-import glass2pic from './bottlepic/glass2.png';
+let glass2pic = './bottlepic/glass2.png';
+let glass2 = document.createElement("img");
 glass2.src = glass2pic;
-let glass3 = new Image()
-import glass3pic from './bottlepic/glass3.png';
+let glass3pic = './bottlepic/glass3.png';
+let glass3 = document.createElement("img");
 glass3.src = glass3pic;
-let glass4 = new Image()
-import glass4pic from './bottlepic/glass4.png';
+let glass4pic = './bottlepic/glass4.png';
+let glass4 = document.createElement("img");
 glass4.src = glass4pic;
-let glass5 = new Image()
-import glass5pic from './bottlepic/glass5.png';
+let glass5pic = './bottlepic/glass5.png';
+let glass5 = document.createElement("img");
 glass5.src = glass5pic;
-let glass6 = new Image()
-import glass6pic from './bottlepic/glass6.png';
+let glass6pic = './bottlepic/glass6.png';
+let glass6 = document.createElement("img");
 glass6.src = glass6pic;
+
 
 function show_image1(src, width, height, alt) {
     var glasspic1 = document.createElement("img");
@@ -193,9 +194,12 @@ const Engine = Matter.Engine,
   Common = Matter.Common,
   Svg = Matter.Svg,
   Vertices = Matter.Vertices,
-  Composite = Matter.Composite;
+  MouseConstraint = Matter.MouseConstraint,
+  Mouse = Matter.Mouse,
+  Composite = Matter.Composite,
+  Constraint = Matter.Constraint;
 
-Common.setDecomp(decomp);
+// Common.setDecomp(decomp);
 
 const iEngine = Engine.create({ gravity: { y: 0.2 } });
 const World = iEngine.world;
@@ -431,38 +435,51 @@ save.addEventListener("click", function() {
 });
 
 function handleOrientation(event) {
-  // Get the rotation data from the event
-  // const alpha = event.alpha || 0; // rotation around z-axis
+  //*****
+  // // Get the rotation data from the event
+  // // const alpha = event.alpha || 0; // rotation around z-axis
+  // // const beta = event.beta || 0; // rotation around x-axis
+  // // const gamma = event.gamma || 0; // rotation around y-axis
+
+  // // // Use the rotation data as needed
+  // // console.log("Alpha:", alpha, "Beta:", beta, "Gamma:", gamma);
+
   // const beta = event.beta || 0; // rotation around x-axis
   // const gamma = event.gamma || 0; // rotation around y-axis
 
-  // // Use the rotation data as needed
-  // console.log("Alpha:", alpha, "Beta:", beta, "Gamma:", gamma);
+  // // Map the rotation values to the gravity vector range (-1 to 1)
+  // const mappedX = map(gamma, -90, 90, -0.7, 0.7);
+  // const mappedY = map(beta, -90, 90, -0.7, 0.7);
+
+  // // Set the gravity based on the mapped values
+  // iEngine.world.gravity.x = mappedX;
+  // iEngine.world.gravity.y = mappedY;
+  //*****
+
+  if (!permissionGranted) return;
 
   const beta = event.beta || 0; // rotation around x-axis
   const gamma = event.gamma || 0; // rotation around y-axis
 
-  // Map the rotation values to the gravity vector range (-1 to 1)
   const mappedX = map(gamma, -90, 90, -0.7, 0.7);
   const mappedY = map(beta, -90, 90, -0.7, 0.7);
 
-  // Set the gravity based on the mapped values
-  World.gravity.x = mappedX;
-  World.gravity.y = mappedY;
+  iEngine.world.gravity.x = mappedX;
+  iEngine.world.gravity.y = mappedY;
 }
 
 // Update the gravity based on the device orientation
 
-function update() {
-  Matter.Engine.update(iEngine, 1000 / 60);
-  requestAnimationFrame(update);
-}
+// function update() {
+//   Matter.Engine.update(iEngine, 1000 / 60);
+//   requestAnimationFrame(update);
+// }
 
 function map(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 
-update();
+// update();
 
 // Set Up the Particles
 
@@ -512,8 +529,21 @@ function getRandomShapeType() {
 }
 
 function cleanupShapes() {
+  // balls = balls.filter(ball => {
+  //   return ball.position.y < window.innerHeight && ball.position.y > 0 && ball.position.x < window.innerWidth && ball.position.x > 0;
+  // });
   balls = balls.filter(ball => {
-    return ball.position.y < window.innerHeight && ball.position.y > 0 && ball.position.x < window.innerWidth && ball.position.x > 0;
+    const isWithinViewport =
+      ball.position.y < window.innerHeight &&
+      ball.position.y > 0 &&
+      ball.position.x < window.innerWidth &&
+      ball.position.x > 0;
+
+    if (!isWithinViewport) {
+      Composite.remove(iEngine.world, ball); // Remove from world
+    }
+
+    return isWithinViewport;
   });
 }
 
